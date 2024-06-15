@@ -10,6 +10,7 @@ dictionary_set = set()
 
 probabilities_dict = {}
 
+total_reviews = 0
 frequency_stars = {}
 with open("amazon-reviews/Cell_Phones_and_Accessories_5.json", "r") as file:
     for line in file:
@@ -23,7 +24,10 @@ with open("amazon-reviews/Cell_Phones_and_Accessories_5.json", "r") as file:
 
         for word in words:
             dictionary_set.add(word.lower())
+        
+        total_reviews = total_reviews + 1
 
+print(total_reviews)
 print(frequency_stars)
 
 print(len(dictionary_set))
