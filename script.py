@@ -1,3 +1,4 @@
+import re
 import opendatasets as od
 import json
 
@@ -7,12 +8,14 @@ od.download(dataset_url)
 # Retrieve JSON data from the file
 dictionary_set = set()
 with open("amazon-reviews/Cell_Phones_and_Accessories_5.json", "r") as file:
-    line = file.readline()
-    data = json.loads(line)
+    for line in file:
+        data = json.loads(line)
 
-    reviewText = data['reviewText']
-    words = reviewText.split()
-    for word in words:
-        dictionary_set.add(word)
+        reviewText = data['reviewText']
+        
+        words = re.split('[^a-zA-Z0-9]', reviewText)
 
-print(dictionary_set)
+        for word in words:
+            dictionary_set.add(word.lower())
+
+print(len(dictionary_set))
