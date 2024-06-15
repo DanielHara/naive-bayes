@@ -14,8 +14,9 @@ total_reviews = 0
 frequency_stars = {}
 
 number_reviews_containing_word_given_stars = {}
+number_reviews_containing_word = {}
 
-def get_distinct_words_from_review_text(reviewText):
+def get_distinct_words_from_review_text(review_text):
     words = re.split('[^a-zA-Z]', review_text)
     distinct_words = set(map(lambda word: word.lower(), words))
 
@@ -36,6 +37,8 @@ with open("amazon-reviews/Cell_Phones_and_Accessories_5.json", "r") as file:
             dictionary_set.add(word)
         
         for word in distinct_words:
+            number_reviews_containing_word[word] = number_reviews_containing_word.get(word, 0) + 1
+
             if review_stars not in number_reviews_containing_word_given_stars:
                 number_reviews_containing_word_given_stars[review_stars] = {}
 
@@ -50,16 +53,49 @@ for [review_stars, number_reviews_containing_word_dict] in probability_reviews_c
     total_reviews_with_review_starts = frequency_stars.get(review_stars, 0)
 
     for word in number_reviews_containing_word_dict.keys():
-        number_reviews_containing_word_dict[word] = number_reviews_containing_word_dict[word] / total_reviews_with_review_starts
+        # Laplace smoothing
+        number_reviews_containing_word_dict[word] = (number_reviews_containing_word_dict[word] + 1)/ (total_reviews_with_review_starts + 2)
+    
+    for word in dictionary_set:
+        if word not in number_reviews_containing_word_dict:
+            # Laplace smoothing
+            number_reviews_containing_word_dict[word] = 1 / (total_reviews_with_review_starts + 2)
 
 
-review = "Needed an upgrade from my io7 haha. Not holding its charge and it was time. Not the type of person that needs the newest toy. If it works why change."
-distinct_words = get_distinct_words_from_review_text(review)
+# reviewText = "Just got the very well packaged iPhone in the mail and everything works great. It also came with a charger, and most importantly a sim card tool so I could take out my old sim card and put it into this new refurbished phone."
+reviewText = "amazing product"
+# reviewText = "bad, terrible, sucks"
+# reviewText = "and, or, the"
+distinct_words = get_distinct_words_from_review_text(reviewText)
 
-print(total_reviews)
-print(frequency_stars)
 
-print(len(dictionary_set))
+best_probability = 0
+star_prediction = 0
+# Calculations:
+for review_star in range(1, 5 + 1):
+    if review_star not in probability_reviews_containing_word_given_stars:
+        continue
 
-# print(number_reviews_containing_word_given_stars)
-print(probability_reviews_containing_word_given_stars)
+    probability_reviews_containing_word_dict = probability_reviews_containing_word_given_stars[review_star]
+
+    probability = frequency_stars[review_star] / total_reviews
+
+    for word in dictionary_set:
+        if word in distinct_words:
+            factor = probability_reviews_containing_word_dict.get(word, 0) / (number_reviews_containing_word[word] / total_reviews)
+            probability = probability * factor
+        """
+        else:
+            if (1 - number_reviews_containing_word[word] / total_reviews) != 0:
+                factor = (1 - probability_reviews_containing_word_dict.get(word, 0)) / (1 - number_reviews_containing_word[word] / total_reviews)
+            else:
+                factor = 1
+        """
+
+    
+    if probability >= best_probability:
+        best_probability = probability
+        star_prediction = review_star
+
+print('star_prediction', star_prediction)
+
