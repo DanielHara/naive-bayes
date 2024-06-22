@@ -107,4 +107,5 @@ for testing_review in testing_reviews:
 
 print('number_correctly_predicted_reviews', number_correctly_predicted_reviews)
 print('len(testing_reviews)', len(testing_reviews))
+print('frequency_stars', frequency_stars)
 
